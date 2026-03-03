@@ -35,6 +35,33 @@ namespace KASHOP.PL.Controllers
             });
         }
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id , CancellationToken cancellationToken)
+        {
+            var category = await _categoryService.GetCategory((c => c.Id == id), cancellationToken);
+
+            return Ok(new
+            {
+                message = _localizer["Success"].Value,
+                category
+            });
+        }
+
+        [HttpGet("{name}")]
+        public async Task<IActionResult> GetByName(string name, CancellationToken cancellationToken)
+        {
+            var category = await _categoryService.GetCategory((
+                c => c.Translations.Any(t => t.Name == name)), 
+                cancellationToken);
+
+            return Ok(new
+            {
+                message = _localizer["Success"].Value,
+                category
+            });
+        }
+
+
         [HttpPost("")]
         public async Task<IActionResult> Create(CategoryRequest request, CancellationToken cancellationToken)
         {
@@ -46,5 +73,7 @@ namespace KASHOP.PL.Controllers
                 response
             });
         }
+
+
     }
 }

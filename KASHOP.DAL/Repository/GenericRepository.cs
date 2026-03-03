@@ -1,5 +1,6 @@
 ﻿using KASHOP.DAL.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace KASHOP.DAL.Repository
 {
@@ -10,13 +11,34 @@ namespace KASHOP.DAL.Repository
         {
             _context = context;
         }
-        public async Task<List<T>> GetAll(CancellationToken cancellationToken)
+        public async Task<List<T>> GetAll(string[]? includes = null, CancellationToken cancellationToken = default)
         {
-            return await _context.Set<T>().ToListAsync(cancellationToken);
-                //Include(c => c.Translations).ToListAsync(cancellationToken);
+            IQueryable<T> query = _context.Set<T>();
+            if (includes != null)
+            {
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
+            }
+            return await query.ToListAsync(cancellationToken);
         }
 
-        public async Task<T> Create(T entity, CancellationToken cancellationToken)
+        public async Task<T?> GetOne(Expression<Func<T, bool>> filter, string[]? includes = null, CancellationToken cancellationToken = default)
+        {
+            IQueryable<T> query = _context.Set<T>();
+            if (includes != null)
+            {
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
+            }
+            return await query.FirstOrDefaultAsync(filter, cancellationToken);
+        }
+
+
+        public async Task<T> Create(T entity, CancellationToken cancellationToken = default)
         {
             await _context.AddAsync(entity, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
